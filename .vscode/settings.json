@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "pixel_buffer.h": "c"
+        "pixel_buffer.h": "c",
+        "mat4.h": "c"
     }
 }

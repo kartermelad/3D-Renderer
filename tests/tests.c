@@ -2,6 +2,7 @@
 #include "harness/unity.h"
 #include "../include/core/pixel_buffer.h"
 #include "../include/math/vec3.h"
+#include "../include/math/mat4.h"
 
 PixelBuffer* buffer;
 
@@ -129,6 +130,75 @@ void test_vec3_scale(void) {
     TEST_ASSERT_EQUAL_FLOAT(6.0f, result.z);
 }
 
+void test_mat4_identity(void) {
+    Mat4 matrix = mat4_identity();
+
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[0]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[5]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[10]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[15]);
+
+    for (int i = 0; i < 16; i++) {
+        if (i != 0 && i != 5 && i != 10 && i != 15) {
+            TEST_ASSERT_EQUAL_FLOAT(0.0f, matrix.m[i]);
+        }
+    }
+}
+
+void test_mat4_translation(void) {
+    Mat4 matrix = mat4_translation(1.0f, 2.0f, 3.0f);
+
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[0]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[5]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[10]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[15]);
+
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[12]);
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, matrix.m[13]);
+    TEST_ASSERT_EQUAL_FLOAT(3.0f, matrix.m[14]);
+
+    for (int i = 0; i < 16; i++) {
+        if (i != 0 && i != 5 && i != 10 && i != 15 && i != 12 && i != 13 && i != 14) {
+            TEST_ASSERT_EQUAL_FLOAT(0.0f, matrix.m[i]);
+        }
+    }
+}
+
+void test_mat4_multiply(void) {
+    Mat4 a = mat4_identity();
+    Mat4 b = mat4_identity();
+    Mat4 result = mat4_multiply(a, b);
+
+    for (int i = 0; i < 16; i++) {
+        TEST_ASSERT_EQUAL_FLOAT(a.m[i], result.m[i]);
+    }
+}
+
+void test_mat4_scale(void) {
+    Mat4 matrix = mat4_scale(2.0f, 3.0f, 4.0f);
+
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, matrix.m[0]);
+    TEST_ASSERT_EQUAL_FLOAT(3.0f, matrix.m[5]);
+    TEST_ASSERT_EQUAL_FLOAT(4.0f, matrix.m[10]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[15]);
+
+    for (int i = 0; i < 16; i++) {
+        if (i != 0 && i != 5 && i != 10 && i != 15) {
+            TEST_ASSERT_EQUAL_FLOAT(0.0f, matrix.m[i]);
+        }
+    }
+}
+
+void test_mat4_perspective(void) {
+    Mat4 matrix = mat4_perspective(90.0f, 1.0f, 0.1f, 100.0f);
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, matrix.m[0]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, matrix.m[5]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.001001f, matrix.m[10]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -0.1001001f, matrix.m[14]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[11]);
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_create_pixel_buffer);
@@ -143,5 +213,10 @@ int main(void) {
     RUN_TEST(test_vec3_normalize);
     RUN_TEST(test_vec3_length);
     RUN_TEST(test_vec3_scale);
+    RUN_TEST(test_mat4_identity);
+    RUN_TEST(test_mat4_translation);
+    RUN_TEST(test_mat4_multiply);
+    RUN_TEST(test_mat4_scale);
+    RUN_TEST(test_mat4_perspective);
     return UNITY_END();
 }
