@@ -3,6 +3,7 @@
 #include "../include/core/pixel_buffer.h"
 #include "../include/math/vec3.h"
 #include "../include/math/mat4.h"
+#include "../include/render/depth_buffer.h"
 
 PixelBuffer* buffer;
 
@@ -199,6 +200,51 @@ void test_mat4_perspective(void) {
     TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[11]);
 }
 
+void test_create_depth_buffer(void) {
+    int width = 5;
+    int height = 5;
+    float* depth_buffer = create_depth_buffer(width, height);
+
+    TEST_ASSERT_NOT_NULL(depth_buffer);
+
+    int n = width * height;
+    for (int i = 0; i < n; i++) {
+        TEST_ASSERT_EQUAL_FLOAT(INFINITY, depth_buffer[i]);
+    }
+
+    destroy_depth_buffer(depth_buffer);
+}
+
+void test_clear_depth_buffer(void) {
+    int width = 5;
+    int height = 5;
+    float* depth_buffer = create_depth_buffer(width, height);
+
+    int n = width * height;
+    for (int i = 0; i < n; i++) {
+        depth_buffer[i] = 0.0f;
+    }
+
+    clear_depth_buffer(depth_buffer, width, height);
+
+    for (int i = 0; i < n; i++) {
+        TEST_ASSERT_EQUAL_FLOAT(INFINITY, depth_buffer[i]);
+    }
+
+    destroy_depth_buffer(depth_buffer);
+}
+
+void test_destroy_depth_buffer(void) {
+    int width = 5;
+    int height = 5;
+    float* depth_buffer = create_depth_buffer(width, height);
+
+    TEST_ASSERT_NOT_NULL(depth_buffer);
+
+    destroy_depth_buffer(depth_buffer);
+    destroy_depth_buffer(NULL);\
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_create_pixel_buffer);
@@ -218,5 +264,8 @@ int main(void) {
     RUN_TEST(test_mat4_multiply);
     RUN_TEST(test_mat4_scale);
     RUN_TEST(test_mat4_perspective);
+    RUN_TEST(test_create_depth_buffer);
+    RUN_TEST(test_clear_depth_buffer);
+    RUN_TEST(test_destroy_depth_buffer);
     return UNITY_END();
 }
