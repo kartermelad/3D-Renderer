@@ -1,5 +1,6 @@
 #ifndef MAT4_H
 #define MAT4_H
+#include "math/vec4.h"
 
 // 4x4 matrix using a 1D array of 16 floats
 typedef struct {
@@ -52,5 +53,14 @@ Mat4 mat4_scale(float x, float y, float z);
  * @return 4x4 perspective projection matrix
  */
 Mat4 mat4_perspective(float fov, float aspect, float near, float far);
+
+/**
+ * Multiply a 4x4 matrix by a 4D vector
+ * 
+ * @param mat The 4x4 matrix
+ * @param vec The 4D vector
+ * @return The resulting 4D vector after multiplication
+ */
+Vec4 mat4_mul_vec4(Mat4 mat, Vec4 vec);
 
 #endif

@@ -15,6 +15,6 @@ typedef struct {
  * @param v The vertex to convert
  * @return A 4D vector with the vertex's position as the x, y, z, and w components
  */
-Vec4 vertex_to_vac4(Vertex v);
+Vec4 vertex_to_vec4(Vertex v);
 
 #endif

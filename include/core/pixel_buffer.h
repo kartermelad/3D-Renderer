@@ -4,14 +4,14 @@
 
 // Represents a color with red, green, blue components
 typedef struct {
-    uint8_t r, g, b;
+    uint8_t r, g, b, a;
 } Color;
 
 // Represents a 2D pixel buffer for rendering
 typedef struct {
     int width;
     int height;
-    Color* data;
+    Color* pixels;
 } PixelBuffer;
 
 /**
@@ -58,5 +58,13 @@ Color get_pixel(PixelBuffer* buffer, int x, int y);
  * @param clear_color The color to fill the entire buffer with
  */
 void clear_buffer(PixelBuffer* buffer, Color clear_color);
+
+/**
+ * Saves the PixelBuffer to a PPM image file
+ * 
+ * @param buffer Pointer to the PixelBuffer to save
+ * @param filename The name of the output PPM file
+ */
+void save_to_ppm(PixelBuffer* buffer, const char* filename);
 
 #endif

@@ -19,32 +19,32 @@ void test_create_pixel_buffer(void) {
     TEST_ASSERT_NOT_NULL(buffer);
     TEST_ASSERT_EQUAL_INT(10, buffer->width);
     TEST_ASSERT_EQUAL_INT(10, buffer->height);
-    TEST_ASSERT_NOT_NULL(buffer->data);
+    TEST_ASSERT_NOT_NULL(buffer->pixels);
 }
 
 void test_clear_buffer(void) {
-    Color red = {255, 0, 0};
+    Color red = {255, 0, 0, 255};
     clear_buffer(buffer, red);
 
     for (int i = 0; i < buffer->width * buffer->height; i++) {
-        TEST_ASSERT_EQUAL_UINT8(255, buffer->data[i].r);
-        TEST_ASSERT_EQUAL_UINT8(0, buffer->data[i].g);
-        TEST_ASSERT_EQUAL_UINT8(0, buffer->data[i].b);
+        TEST_ASSERT_EQUAL_UINT8(255, buffer->pixels[i].r);
+        TEST_ASSERT_EQUAL_UINT8(0, buffer->pixels[i].g);
+        TEST_ASSERT_EQUAL_UINT8(0, buffer->pixels[i].b);
     }
 }
 
 void test_set_pixel(void) {
-    Color green = {0, 255, 0};
+    Color green = {0, 255, 0, 255};
     set_pixel(buffer, 5, 5, green);
 
     int index = 5 * buffer->width + 5;
-    TEST_ASSERT_EQUAL_UINT8(0, buffer->data[index].r);
-    TEST_ASSERT_EQUAL_UINT8(255, buffer->data[index].g);
-    TEST_ASSERT_EQUAL_UINT8(0, buffer->data[index].b);
+    TEST_ASSERT_EQUAL_UINT8(0, buffer->pixels[index].r);
+    TEST_ASSERT_EQUAL_UINT8(255, buffer->pixels[index].g);
+    TEST_ASSERT_EQUAL_UINT8(0, buffer->pixels[index].b);
 }
 
 void test_get_pixel(void) {
-    Color blue = {0, 0, 255};
+    Color blue = {0, 0, 255, 255};
     set_pixel(buffer, 2, 3, blue);
 
     Color result = get_pixel(buffer, 2, 3);
