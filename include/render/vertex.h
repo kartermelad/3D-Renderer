@@ -1,12 +1,14 @@
 #ifndef VERTEX_H
 #define VERTEX_H
-
 #include "math/vec3.h"
 #include "math/vec4.h"
+#include "core/pixel_buffer.h"
 
 // Vertex with a 3D position
 typedef struct {
     Vec3 position;
+    Color color;
+    Vec3 normal;
 } Vertex;
 
 /**

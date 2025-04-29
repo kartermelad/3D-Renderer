@@ -35,7 +35,7 @@ void destroy_depth_buffer(float* depth_buffer);
  * @param y The y-coordinate of the position
  * @return The depth value at the specified position
  */
-float* get_depth(float* depth_buffer, int width, int x, int y);
+float get_depth(float* depth_buffer, int width, int x, int y);
 
 /**
  * Set the depth value at a specific position in the depth buffer

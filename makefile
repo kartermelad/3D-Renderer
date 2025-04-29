@@ -1,7 +1,7 @@
 # Compiler and flags
 CC       := gcc
-CFLAGS   := -std=c11 -Wall -Wextra -Iinclude -MMD -MP
-LDFLAGS  := -lm
+CFLAGS   := -std=c11 -Wall -Wextra -Iinclude -Ilibs/glfw-3.4.bin.WIN64/include -MMD -MP
+LDFLAGS  := -Llibs/glfw-3.4.bin.WIN64/lib-mingw-w64 -lglfw3 -lgdi32 -lopengl32 -lm
 
 # Directories
 SRC_DIR  := src
