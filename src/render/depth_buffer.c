@@ -30,3 +30,11 @@ void destroy_depth_buffer(float* buffer) {
     }
     free(buffer);
 }
+
+float get_depth(float* depth_buffer, int width, int x, int y) {
+    return depth_buffer[y * width + x];
+}
+
+void set_depth(float* depth_buffer, int width, int x, int y, float z) {
+    depth_buffer[y * width + x] = z;
+}

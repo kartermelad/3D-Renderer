@@ -26,4 +26,26 @@ void clear_depth_buffer(float* depth_buffer, int width, int height);
  */
 void destroy_depth_buffer(float* depth_buffer);
 
-#endif 
+/**
+ * Retrieve the depth value at a specific position in the depth buffer
+ * 
+ * @param depth_buffer The depth buffer
+ * @param width The width of the depth buffer
+ * @param x The x-coordinate of the position
+ * @param y The y-coordinate of the position
+ * @return The depth value at the specified position
+ */
+float* get_depth(float* depth_buffer, int width, int x, int y);
+
+/**
+ * Set the depth value at a specific position in the depth buffer
+ * 
+ * @param depth_buffer The depth buffer
+ * @param width The width of the depth buffer
+ * @param x The x-coordinate of the position
+ * @param y The y-coordinate of the position
+ * @param z The depth value to set
+ */
+void set_depth(float* depth_buffer, int width, int x, int y, float z);
+
+#endif
