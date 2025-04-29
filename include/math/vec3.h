@@ -67,4 +67,15 @@ float vec3_length(Vec3 v);
  */
 Vec3 vec3_scale(Vec3 v, float scalar);
 
+
+/**
+ * Rotates a vector around a given axis by a specified angle
+ * 
+ * @param v The vector to rotate
+ * @param axis The axis to rotate arounds
+ * @param angle_radians The angle to rotate, in radians
+ * @return The rotated vector
+ */
+Vec3 vec3_rotate(Vec3 v, Vec3 axis, float angle_radians);
+
 #endif

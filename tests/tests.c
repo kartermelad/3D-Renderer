@@ -1,14 +1,20 @@
 #include <string.h>
 #include "harness/unity.h"
 #include "../include/core/pixel_buffer.h"
+#include "../include/core/camera.h"
 #include "../include/math/vec3.h"
 #include "../include/math/mat4.h"
 #include "../include/render/depth_buffer.h"
 
 PixelBuffer* buffer;
+Camera camera;
 
 void setUp(void) {
     buffer = create_pixel_buffer(10, 10);
+
+    camera.position = (Vec3){0.0f, 0.0f, 0.0f};
+    camera.target = (Vec3){0.0f, 0.0f, -1.0f};
+    camera.up = (Vec3){0.0f, 1.0f, 0.0f};
 }
 
 void tearDown(void) {
@@ -245,6 +251,87 @@ void test_destroy_depth_buffer(void) {
     destroy_depth_buffer(NULL);\
 }
 
+void test_camera_move_forward(void) {
+    camera_move_forward(&camera, 1.0f, 2.0f);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.y);
+    TEST_ASSERT_EQUAL_FLOAT(-2.0f, camera.position.z);
+
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
+    TEST_ASSERT_EQUAL_FLOAT(-3.0f, camera.target.z);
+}
+
+void test_camera_move_backward(void) {
+    camera_move_backward(&camera, 1.0f, 2.0f);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.y);
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, camera.position.z);
+
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, camera.target.z);
+}
+
+void test_camera_strafe_left(void) {
+    camera_strafe_left(&camera, 1.0f, 2.0f);
+    TEST_ASSERT_EQUAL_FLOAT(-2.0f, camera.position.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.y);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.z);
+
+    TEST_ASSERT_EQUAL_FLOAT(-2.0f, camera.target.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
+    TEST_ASSERT_EQUAL_FLOAT(-1.0f, camera.target.z);
+}
+
+void test_camera_strafe_right(void) {
+    camera_strafe_right(&camera, 1.0f, 2.0f);
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, camera.position.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.y);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.z);
+
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, camera.target.x);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
+    TEST_ASSERT_EQUAL_FLOAT(-1.0f, camera.target.z);
+}
+
+void test_camera_yaw(void) {
+    Vec3 forward = vec3_sub(camera.target, camera.position);
+    forward = vec3_normalize(forward);
+
+    camera_yaw(&camera, 3.14159f / 2.0f);
+
+    Vec3 expected_forward = vec3_rotate(forward, camera.up, 3.14159f / 2.0f);
+    expected_forward = vec3_normalize(expected_forward);
+
+    Vec3 new_forward = vec3_sub(camera.target, camera.position);
+    new_forward = vec3_normalize(new_forward);
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.x, new_forward.x);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.y, new_forward.y);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.z, new_forward.z);
+}
+
+void test_camera_pitch(void) {
+    Vec3 forward = vec3_sub(camera.target, camera.position);
+    forward = vec3_normalize(forward);
+
+    Vec3 right = vec3_cross(forward, camera.up);
+    right = vec3_normalize(right);
+
+    camera_pitch(&camera, 3.14159f / 4.0f); 
+
+    Vec3 expected_forward = vec3_rotate(forward, right, 3.14159f / 4.0f);
+    expected_forward = vec3_normalize(expected_forward);
+
+    Vec3 new_forward = vec3_sub(camera.target, camera.position);
+    new_forward = vec3_normalize(new_forward);
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.x, new_forward.x);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.y, new_forward.y);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.z, new_forward.z);
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_create_pixel_buffer);
@@ -267,5 +354,11 @@ int main(void) {
     RUN_TEST(test_create_depth_buffer);
     RUN_TEST(test_clear_depth_buffer);
     RUN_TEST(test_destroy_depth_buffer);
+    RUN_TEST(test_camera_move_backward);
+    RUN_TEST(test_camera_move_forward);
+    RUN_TEST(test_camera_strafe_left);
+    RUN_TEST(test_camera_strafe_right);
+    RUN_TEST(test_camera_yaw);
+    RUN_TEST(test_camera_pitch);
     return UNITY_END();
 }
