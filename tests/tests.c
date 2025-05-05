@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <string.h>
 #include "harness/unity.h"
 #include "../include/core/pixel_buffer.h"
@@ -13,8 +15,10 @@ void setUp(void) {
     buffer = create_pixel_buffer(10, 10);
 
     camera.position = (Vec3){0.0f, 0.0f, 0.0f};
-    camera.target = (Vec3){0.0f, 0.0f, -1.0f};
+    camera.target = (Vec3){0.0f, 0.0f, 1.0f};
     camera.up = (Vec3){0.0f, 1.0f, 0.0f};
+    camera.yaw = 0.0f;
+    camera.pitch = 0.0f;
 }
 
 void tearDown(void) {
@@ -255,22 +259,22 @@ void test_camera_move_forward(void) {
     camera_move_forward(&camera, 1.0f, 2.0f);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.x);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.y);
-    TEST_ASSERT_EQUAL_FLOAT(-2.0f, camera.position.z);
+    TEST_ASSERT_EQUAL_FLOAT(2.0f, camera.position.z);
 
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.x);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
-    TEST_ASSERT_EQUAL_FLOAT(-3.0f, camera.target.z);
+    TEST_ASSERT_EQUAL_FLOAT(3.0f, camera.target.z);
 }
 
 void test_camera_move_backward(void) {
     camera_move_backward(&camera, 1.0f, 2.0f);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.x);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.position.y);
-    TEST_ASSERT_EQUAL_FLOAT(2.0f, camera.position.z);
+    TEST_ASSERT_EQUAL_FLOAT(-2.0f, camera.position.z);
 
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.x);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
-    TEST_ASSERT_EQUAL_FLOAT(1.0f, camera.target.z);
+    TEST_ASSERT_EQUAL_FLOAT(-1.0f, camera.target.z);
 }
 
 void test_camera_strafe_left(void) {
@@ -281,7 +285,7 @@ void test_camera_strafe_left(void) {
 
     TEST_ASSERT_EQUAL_FLOAT(-2.0f, camera.target.x);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
-    TEST_ASSERT_EQUAL_FLOAT(-1.0f, camera.target.z);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, camera.target.z);
 }
 
 void test_camera_strafe_right(void) {
@@ -292,18 +296,16 @@ void test_camera_strafe_right(void) {
 
     TEST_ASSERT_EQUAL_FLOAT(2.0f, camera.target.x);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, camera.target.y);
-    TEST_ASSERT_EQUAL_FLOAT(-1.0f, camera.target.z);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, camera.target.z);
 }
 
 void test_camera_yaw(void) {
     Vec3 forward = vec3_sub(camera.target, camera.position);
     forward = vec3_normalize(forward);
 
-    camera_yaw(&camera, 3.14159f / 2.0f);
+    camera_yaw(&camera, M_PI / 2.0f);
 
-    Vec3 expected_forward = vec3_rotate(forward, camera.up, 3.14159f / 2.0f);
-    expected_forward = vec3_normalize(expected_forward);
-
+    Vec3 expected_forward = { 1.0f, 0.0f, 0.0f }; // Forward = +X after 90° yaw
     Vec3 new_forward = vec3_sub(camera.target, camera.position);
     new_forward = vec3_normalize(new_forward);
 
@@ -319,10 +321,9 @@ void test_camera_pitch(void) {
     Vec3 right = vec3_cross(forward, camera.up);
     right = vec3_normalize(right);
 
-    camera_pitch(&camera, 3.14159f / 4.0f); 
+    camera_pitch(&camera, M_PI / 4.0f);
 
-    Vec3 expected_forward = vec3_rotate(forward, right, 3.14159f / 4.0f);
-    expected_forward = vec3_normalize(expected_forward);
+    Vec3 expected_forward = { 0.0f, 0.7071068f, 0.7071068f };
 
     Vec3 new_forward = vec3_sub(camera.target, camera.position);
     new_forward = vec3_normalize(new_forward);

@@ -1,24 +1,29 @@
 #include "core/camera.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
-// Calculates the forward direction of the camera
+#define CAMERA_PITCH_LIMIT (M_PI / 2 - 0.01f)
+
+static void camera_update_target(Camera* camera) {
+    float x = sinf(camera->yaw) * cosf(camera->pitch);
+    float y = sinf(camera->pitch);
+    float z = cosf(camera->yaw) * cosf(camera->pitch);
+
+    Vec3 direction = { x, y, z };
+    direction = vec3_normalize(direction);
+    camera->target = vec3_add(camera->position, direction);
+}
+
 static Vec3 camera_forward(const Camera* camera) {
-    Vec3 forward = vec3_sub(camera->target, camera->position);
-    return vec3_normalize(forward);
+    return vec3_normalize(vec3_sub(camera->target, camera->position));
 }
 
-// Calculates the right direction of the camera
 static Vec3 camera_right(const Camera* camera) {
-    Vec3 forward = camera_forward(camera);
-    Vec3 right = vec3_cross(forward, camera->up);
-    return vec3_normalize(right);
+    return vec3_normalize(vec3_cross(camera->up, camera_forward(camera)));
 }
 
-// Calculates the true up direction of the camera
 static Vec3 camera_true_up(const Camera* camera) {
-    Vec3 forward = camera_forward(camera);
-    Vec3 right = camera_right(camera);
-    Vec3 up = vec3_cross(right, forward);
-    return vec3_normalize(up);
+    return vec3_normalize(vec3_cross(camera_forward(camera), camera_right(camera)));
 }
 
 Mat4 camera_get_view_matrix(const Camera* camera) {
@@ -27,18 +32,22 @@ Mat4 camera_get_view_matrix(const Camera* camera) {
     Vec3 up = camera_true_up(camera);
 
     Mat4 matrix = mat4_identity();
+
     matrix.m[0] = right.x;
     matrix.m[1] = right.y;
     matrix.m[2] = right.z;
     matrix.m[3] = -vec3_dot(right, camera->position);
+
     matrix.m[4] = up.x;
     matrix.m[5] = up.y;
     matrix.m[6] = up.z;
     matrix.m[7] = -vec3_dot(up, camera->position);
-    matrix.m[8] = -forward.x;
-    matrix.m[9] = -forward.y;
-    matrix.m[10] = -forward.z;
-    matrix.m[11] = vec3_dot(forward, camera->position);
+
+    matrix.m[8] = forward.x;
+    matrix.m[9] = forward.y;
+    matrix.m[10] = forward.z;
+    matrix.m[11] = -vec3_dot(forward, camera->position);
+
     matrix.m[12] = 0.0f;
     matrix.m[13] = 0.0f;
     matrix.m[14] = 0.0f;
@@ -48,52 +57,39 @@ Mat4 camera_get_view_matrix(const Camera* camera) {
 }
 
 void camera_move_forward(Camera* camera, float delta_time, float speed) {
-    Vec3 forward = camera_forward(camera);
-    float scalar = delta_time * speed;
-    Vec3 vector = vec3_scale(forward, scalar);
-
-    camera->position = vec3_add(camera->position, vector);
-    camera->target = vec3_add(camera->position, forward);
+    Vec3 delta = vec3_scale(camera_forward(camera), delta_time * speed);
+    camera->position = vec3_add(camera->position, delta);
+    camera->target = vec3_add(camera->target, delta);
 }
 
 void camera_move_backward(Camera* camera, float delta_time, float speed) {
-    Vec3 forward = camera_forward(camera);
-    float scalar = -delta_time * speed;
-    Vec3 vector = vec3_scale(forward, scalar);
-
-    camera->position = vec3_add(camera->position, vector);
-    camera->target = vec3_add(camera->position, forward);
+    Vec3 delta = vec3_scale(camera_forward(camera), -delta_time * speed);
+    camera->position = vec3_add(camera->position, delta);
+    camera->target = vec3_add(camera->target, delta);
 }
 
 void camera_strafe_left(Camera* camera, float delta_time, float speed) {
-    Vec3 right = camera_right(camera);
-    float scalar = -delta_time * speed;
-    Vec3 vector = vec3_scale(right, scalar);
-    camera->position = vec3_add(camera->position, vector);
-    camera->target = vec3_add(camera->target, vector);
+    Vec3 delta = vec3_scale(camera_right(camera), -delta_time * speed);
+    camera->position = vec3_add(camera->position, delta);
+    camera->target = vec3_add(camera->target, delta);
 }
 
 void camera_strafe_right(Camera* camera, float delta_time, float speed) {
-    Vec3 right = camera_right(camera);
-    float scalar = delta_time * speed;
-    Vec3 vector = vec3_scale(right, scalar);
-    camera->position = vec3_add(camera->position, vector);
-    camera->target = vec3_add(camera->target, vector);
+    Vec3 delta = vec3_scale(camera_right(camera), delta_time * speed);
+    camera->position = vec3_add(camera->position, delta);
+    camera->target = vec3_add(camera->target, delta);
 }
 
 void camera_yaw(Camera* camera, float angle_radians) {
-    Vec3 forward = camera_forward(camera);
-    Vec3 rotated = vec3_rotate(forward, camera->up, angle_radians);
-    rotated = vec3_normalize(rotated);
-    camera->target = vec3_add(camera->position, rotated);
+    camera->yaw += angle_radians;
+    camera_update_target(camera);
 }
 
 void camera_pitch(Camera* camera, float angle_radians) {
-    Vec3 forward = camera_forward(camera);
-    Vec3 right = camera_right(camera);
-    Vec3 rotated = vec3_rotate(forward, right, angle_radians);
-    rotated = vec3_normalize(rotated);
-    camera->target = vec3_add(camera->position, rotated);
-    camera->up = vec3_cross(right, rotated);
-    camera->up = vec3_normalize(camera->up);
+    camera->pitch += angle_radians;
+
+    if (camera->pitch > CAMERA_PITCH_LIMIT) camera->pitch = CAMERA_PITCH_LIMIT;
+    if (camera->pitch < -CAMERA_PITCH_LIMIT) camera->pitch = -CAMERA_PITCH_LIMIT;
+
+    camera_update_target(camera);
 }

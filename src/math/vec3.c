@@ -69,7 +69,7 @@ Vec3 vec3_rotate(Vec3 v, Vec3 axis, float angle_radians) {
     float sin_theta = sin(angle_radians);
 
     Vec3 term1 = vec3_scale(v, cos_theta);
-    Vec3 term2 = vec3_scale(vec3_cross(axis, v), sin_theta);
+    Vec3 term2 = vec3_scale(vec3_cross(v, axis), sin_theta);
     Vec3 term3 = vec3_scale(axis, vec3_dot(axis, v) * (1.0f - cos_theta));
 
     return vec3_add(vec3_add(term1, term2), term3);

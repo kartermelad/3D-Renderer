@@ -4,6 +4,7 @@
         "mat4.h": "c",
         "vec2.h": "c",
         "renderer.h": "c",
-        "depth_buffer.h": "c"
+        "depth_buffer.h": "c",
+        "camera.h": "c"
     }
 }
