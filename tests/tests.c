@@ -333,6 +333,38 @@ void test_camera_pitch(void) {
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, expected_forward.z, new_forward.z);
 }
 
+void test_mat4_look_at(void) {
+    Vec3 eye = {0.0f, 0.0f, 5.0f};
+    Vec3 target = {0.0f, 0.0f, 0.0f};
+    Vec3 up = {0.0f, 1.0f, 0.0f};
+
+    Mat4 view_matrix = mat4_look_at(eye, target, up);
+
+    Vec3 forward = vec3_normalize(vec3_sub(target, eye));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -forward.x, view_matrix.m[8]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -forward.y, view_matrix.m[9]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -forward.z, view_matrix.m[10]);
+
+    Vec3 right = vec3_normalize(vec3_cross(up, forward));
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, right.x, view_matrix.m[0]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, right.y, view_matrix.m[1]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, right.z, view_matrix.m[2]);
+
+    Vec3 true_up = vec3_cross(forward, right);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, true_up.x, view_matrix.m[4]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, true_up.y, view_matrix.m[5]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, true_up.z, view_matrix.m[6]);
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -vec3_dot(right, eye), view_matrix.m[12]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -vec3_dot(true_up, eye), view_matrix.m[13]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, vec3_dot(forward, eye), view_matrix.m[14]);
+
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, view_matrix.m[3]);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, view_matrix.m[7]);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, view_matrix.m[11]);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, view_matrix.m[15]);
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_create_pixel_buffer);
@@ -361,5 +393,6 @@ int main(void) {
     RUN_TEST(test_camera_strafe_right);
     RUN_TEST(test_camera_yaw);
     RUN_TEST(test_camera_pitch);
+    RUN_TEST(test_mat4_look_at);
     return UNITY_END();
 }

@@ -93,3 +93,19 @@ void camera_pitch(Camera* camera, float angle_radians) {
 
     camera_update_target(camera);
 }
+
+void camera_init(Camera* camera, Vec3 position, Vec3 target, Vec3 up, float fov, float aspect, float near, float far) {
+    camera->position = position;
+    camera->target = target;
+    camera->up = up;
+
+    Vec3 forward = vec3_normalize(vec3_sub(target, position));
+    camera->yaw = atan2f(forward.x, forward.z);
+    camera->pitch = asinf(forward.y);
+
+    if (camera->pitch > CAMERA_PITCH_LIMIT) camera->pitch = CAMERA_PITCH_LIMIT;
+    if (camera->pitch < -CAMERA_PITCH_LIMIT) camera->pitch = -CAMERA_PITCH_LIMIT;
+
+    camera->projection_matrix = mat4_perspective(fov, aspect, near, far);
+    camera->view_matrix = camera_get_view_matrix(camera);
+}

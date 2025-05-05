@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <GLFW/glfw3.h>
 #include "core/pixel_buffer.h"
+#include "core/camera.h"
 #include "render/depth_buffer.h"
-#include "render/traingle.h"
+#include "render/triangle.h"
+#include "math/mat4.h"
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -40,19 +42,32 @@ int main(void) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Step 4: Define Triangle Vertices
-    Vertex v0 = {{400.0f, 100.0f, 0.5f}, {255, 0, 0, 255}, {0.0f, 0.0f, 0.0f}};
-    Vertex v1 = {{600.0f, 400.0f, 0.5f}, {0, 255, 0, 255}, {0.0f, 0.0f, 0.0f}};
-    Vertex v2 = {{200.0f, 400.0f, 0.5f}, {0, 0, 255, 255}, {0.0f, 0.0f, 0.0f}};
+    // Step 4: Initialize Camera
+    Camera camera;
+    // Move the camera farther back to ensure the triangle fits within the view
+    camera_init(&camera, (Vec3){0.0f, 0.0f, -15.0f}, (Vec3){0.0f, 0.0f, 0.0f}, (Vec3){0.0f, 1.0f, 0.0f}, 60.0f, (float)WIDTH / HEIGHT, 0.1f, 100.0f);
 
-    // Step 5: Main Loop
+
+    // Step 5: Define Triangle Vertices
+    Vertex v0 = {{-0.5f, 0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {255, 0, 0, 255}};
+    Vertex v1 = {{0.5f, 0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0, 255, 0, 255}};
+    Vertex v2 = {{0.0f, -0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0, 0, 255, 255}};
+
+    // Step 6: Main Loop
     while (!glfwWindowShouldClose(window)) {
         // Clear PixelBuffer and DepthBuffer
         clear_buffer(pixel_buffer, (Color){0, 0, 0, 255}); // Black
         clear_depth_buffer(depth_buffer, WIDTH, HEIGHT);
 
+        // Update Camera View Matrix (if needed, e.g., for movement)
+        camera.view_matrix = camera_get_view_matrix(&camera);
+
+        // Compute the Model-View-Projection (MVP) matrix
+        Mat4 model_matrix = mat4_identity(); // No transformations for the triangle
+        Mat4 mvp = mat4_multiply(camera.projection_matrix, mat4_multiply(camera.view_matrix, model_matrix));
+
         // Draw the triangle
-        draw_filled_triangle(&v0, &v1, &v2, pixel_buffer, depth_buffer);
+        draw_triangle(v0, v1, v2, mvp, pixel_buffer, depth_buffer, WIDTH, HEIGHT);
 
         // Upload PixelBuffer to OpenGL texture
         upload_pixel_buffer_to_texture(pixel_buffer, texture_id);
@@ -77,7 +92,7 @@ int main(void) {
         glfwPollEvents();
     }
 
-    // Step 6: Clean Up
+    // Step 7: Clean Up
     destroy_pixel_buffer(pixel_buffer);
     destroy_depth_buffer(depth_buffer);
     glDeleteTextures(1, &texture_id);

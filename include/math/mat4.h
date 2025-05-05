@@ -63,4 +63,14 @@ Mat4 mat4_perspective(float fov, float aspect, float near, float far);
  */
 Vec4 mat4_mul_vec4(Mat4 mat, Vec4 vec);
 
+/**
+ * Create a look-at matrix
+ * 
+ * @param eye Position of the camera
+ * @param target Point the camera is looking at
+ * @param up Up vector of the camera
+ * @return 4x4 look-at matrix
+ */
+Mat4 mat4_look_at(Vec3 eye, Vec3 target, Vec3 up);
+
 #endif

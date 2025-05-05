@@ -5,6 +5,7 @@
         "vec2.h": "c",
         "renderer.h": "c",
         "depth_buffer.h": "c",
-        "camera.h": "c"
+        "camera.h": "c",
+        "triangle.h": "c"
     }
 }

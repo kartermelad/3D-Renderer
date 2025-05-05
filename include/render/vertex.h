@@ -6,9 +6,9 @@
 
 // Vertex with a 3D position
 typedef struct {
-    Vec3 position;
-    Color color;
+    Vec4 position;
     Vec3 normal;
+    Color color;
 } Vertex;
 
 /**

@@ -11,6 +11,8 @@ typedef struct {
     Vec3 up; 
     float yaw;
     float pitch;
+    Mat4 projection_matrix;
+    Mat4 view_matrix;
 } Camera;
 
 /**
@@ -72,5 +74,19 @@ void camera_yaw(Camera* camera, float angle_radians);
  * @param angle_radians The angle to rotate in radians
  */
 void camera_pitch(Camera* camera, float angle_radians);
+
+/**
+ * Initialize the camera
+ * 
+ * @param camera Pointer to the camera object
+ * @param position Initial position of the camera
+ * @param target Point the camera is looking at
+ * @param up Up vector of the camera
+ * @param fov Field of view in degrees
+ * @param aspect Aspect ratio (width / height)
+ * @param near Near clipping plane
+ * @param far Far clipping plane
+ */
+void camera_init(Camera* camera, Vec3 position, Vec3 target, Vec3 up, float fov, float aspect, float near, float far);
 
 #endif
