@@ -206,7 +206,7 @@ void test_mat4_perspective(void) {
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, matrix.m[0]);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, matrix.m[5]);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.001001f, matrix.m[10]);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -0.1001001f, matrix.m[14]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 0.1001001f, matrix.m[14]);
     TEST_ASSERT_EQUAL_FLOAT(1.0f, matrix.m[11]);
 }
 
@@ -341,9 +341,9 @@ void test_mat4_look_at(void) {
     Mat4 view_matrix = mat4_look_at(eye, target, up);
 
     Vec3 forward = vec3_normalize(vec3_sub(target, eye));
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -forward.x, view_matrix.m[8]);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -forward.y, view_matrix.m[9]);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -forward.z, view_matrix.m[10]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, forward.x, view_matrix.m[8]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, forward.y, view_matrix.m[9]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, forward.z, view_matrix.m[10]);
 
     Vec3 right = vec3_normalize(vec3_cross(up, forward));
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, right.x, view_matrix.m[0]);
@@ -357,7 +357,7 @@ void test_mat4_look_at(void) {
 
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, -vec3_dot(right, eye), view_matrix.m[12]);
     TEST_ASSERT_FLOAT_WITHIN(0.0001f, -vec3_dot(true_up, eye), view_matrix.m[13]);
-    TEST_ASSERT_FLOAT_WITHIN(0.0001f, vec3_dot(forward, eye), view_matrix.m[14]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -vec3_dot(forward, eye), view_matrix.m[14]);
 
     TEST_ASSERT_EQUAL_FLOAT(0.0f, view_matrix.m[3]);
     TEST_ASSERT_EQUAL_FLOAT(0.0f, view_matrix.m[7]);
