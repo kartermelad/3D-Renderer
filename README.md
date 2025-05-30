@@ -1,6 +1,6 @@
 # 3D Software Renderer in C
 
-This is a custom-built software 3D renderer written in C, utilizing a pixel buffer for rendering and `GLFW` for window and OpenGL context management. The renderer performs 3D transformations, triangle rasterization, and depth buffering entirely in software.
+This is a custom-built software 3D renderer written in C, utilizing a pixel buffer for rendering and `GLFW` for window and OpenGL context management. The renderer performs 3D transformations, triangle rasterization, and depth buffering entirely in software. This is still a work in progress.
 
 ## Features
 - Custom built math library (matrices, vectors)
