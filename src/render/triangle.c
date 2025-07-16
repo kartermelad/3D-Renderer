@@ -69,14 +69,14 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
     int min_y = fmax(0, floor(min(p0.y, p1.y, p2.y)));
     int max_y = fmin(height - 1, ceil(max(p0.y, p1.y, p2.y)));
     float total_area = edge_function(p0, p1, p2);
-    
+
     if (total_area < 0) {
         Vec2 temp = p1;
         p1 = p2;
         p2 = temp;
         total_area = edge_function(p0, p1, p2);
     }
-    
+
     if (total_area <= 0) {
         return;
     }
@@ -85,6 +85,22 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
 
     const float EDGE_THRESHOLD = 0.02f;
     const Color EDGE_COLOR  = {255, 255, 255, 255};
+
+    Vec3 v0_world = {v0.position.x, v0.position.y, v0.position.z};
+    Vec3 v1_world = {v1.position.x, v1.position.y, v1.position.z};
+    Vec3 v2_world = {v2.position.x, v2.position.y, v2.position.z};
+
+    Vec3 edge1 = vec3_sub(v1_world, v0_world);
+    Vec3 edge2 = vec3_sub(v2_world, v0_world);
+    Vec3 normal = vec3_normalize(vec3_cross(edge1, edge2));
+
+    Vec3 view_dir = {0.0f, 0.0f, -1.0f};
+    if (vec3_dot(normal, view_dir) >= 0.0f) {
+        return;
+    }
+
+    Vec3 light_dir = vec3_normalize((Vec3){1.0f, 2.0f, -2.0f});
+    float intensity = fmaxf(0.2f, vec3_dot(normal, light_dir));
 
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
@@ -109,12 +125,15 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
                     if (alpha < EDGE_THRESHOLD || beta < EDGE_THRESHOLD || gamma < EDGE_THRESHOLD) {
                         set_pixel(buffer, x, y, EDGE_COLOR);
                     } else {
-                        // Interpolate vertex colors
+                        uint8_t base_r = (v0.color.r + v1.color.r + v2.color.r) / 3;
+                        uint8_t base_g = (v0.color.g + v1.color.g + v2.color.g) / 3;
+                        uint8_t base_b = (v0.color.b + v1.color.b + v2.color.b) / 3;
+
                         Color fill_color = {
-                            (uint8_t)(alpha * v0.color.r + beta * v1.color.r + gamma * v2.color.r),
-                            (uint8_t)(alpha * v0.color.g + beta * v1.color.g + gamma * v2.color.g),
-                            (uint8_t)(alpha * v0.color.b + beta * v1.color.b + gamma * v2.color.b),
-                            255
+                            .r = (uint8_t)fminf(255.0f, base_r * intensity),
+                            .g = (uint8_t)fminf(255.0f, base_g * intensity),
+                            .b = (uint8_t)fminf(255.0f, base_b * intensity),
+                            .a = 255
                         };
                         set_pixel(buffer, x, y, fill_color);
                     }

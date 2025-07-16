@@ -1,4 +1,5 @@
 #include "math/vec3.h"
+#include "math/vec4.h"
 #include <math.h>
 
 Vec3 vec3_add(Vec3 a, Vec3 b) {
@@ -73,4 +74,15 @@ Vec3 vec3_rotate(Vec3 v, Vec3 axis, float angle_radians) {
     Vec3 term3 = vec3_scale(axis, vec3_dot(axis, v) * (1.0f - cos_theta));
 
     return vec3_add(vec3_add(term1, term2), term3);
+}
+
+Vec3 vec4_to_vec3(Vec4 v) {
+    Vec3 result = { v.x, v.y, v.z };
+    return result;
+}
+
+Vec3 compute_triangle_normal(Vec4 a, Vec4 b, Vec4 c) {
+    Vec3 ab = vec3_sub(vec4_to_vec3(b), vec4_to_vec3(a));
+    Vec3 ac = vec3_sub(vec4_to_vec3(c), vec4_to_vec3(a));
+    return vec3_normalize(vec3_cross(ab, ac));
 }

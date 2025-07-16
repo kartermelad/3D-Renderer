@@ -3,7 +3,7 @@
 #include "math/vec3.h"
 
 // 4D vector with x, y, z, and w components
-typedef struct {
+typedef struct Vec4 {
     float x, y, z, w;
 } Vec4;
 

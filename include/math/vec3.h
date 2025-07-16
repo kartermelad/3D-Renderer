@@ -1,6 +1,8 @@
 #ifndef VEC3_H
 #define VEC3_H
 
+typedef struct Vec4 Vec4;
+
 // A 3D vector with x, y, and z components
 typedef struct {
     float x, y, z;
@@ -77,5 +79,23 @@ Vec3 vec3_scale(Vec3 v, float scalar);
  * @return The rotated vector
  */
 Vec3 vec3_rotate(Vec3 v, Vec3 axis, float angle_radians);
+
+/**
+ * Convert a Vec4 to Vec3 by dropping the w component
+ * 
+ * @param v The 4D vector
+ * @return The equivelant 3D vector
+ */
+Vec3 vec4_to_vec3(Vec4 v);
+
+/**
+ * Computer the normal vector of a triangle
+ * 
+ * @param a First vertex position
+ * @param b Second vertex position
+ * @param c Third vertex position
+ * @return The normalized face normal
+ */
+Vec3 compute_triangle_normal(Vec4 a, Vec4 b, Vec4 c);
 
 #endif
