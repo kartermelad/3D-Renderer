@@ -5,6 +5,7 @@
 #include "render/depth_buffer.h"
 #include "render/triangle.h"
 #include "math/mat4.h"
+#include "mesh/mesh.h"
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -16,7 +17,6 @@ void upload_pixel_buffer_to_texture(PixelBuffer* buffer, GLuint texture_id) {
 }
 
 int main(void) {
-    // Step 1: Initialize GLFW
     if (!glfwInit()) {
         fprintf(stderr, "Failed to initialize GLFW\n");
         return -1;
@@ -30,11 +30,9 @@ int main(void) {
     }
     glfwMakeContextCurrent(window);
 
-    // Step 2: Create Pixel Buffer and Depth Buffer
     PixelBuffer* pixel_buffer = create_pixel_buffer(WIDTH, HEIGHT);
     float* depth_buffer = create_depth_buffer(WIDTH, HEIGHT);
 
-    // Step 3: Create OpenGL Texture
     GLuint texture_id;
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -42,40 +40,76 @@ int main(void) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Step 4: Initialize Camera
     Camera camera;
-    // Move the camera farther back to ensure the triangle fits within the view
-    camera_init(&camera, (Vec3){0.0f, 0.0f, -15.0f}, (Vec3){0.0f, 0.0f, 0.0f}, (Vec3){0.0f, 1.0f, 0.0f}, 60.0f, (float)WIDTH / HEIGHT, 0.1f, 100.0f);
+    camera_init(&camera,
+        (Vec3){0.0f, 0.0f, -10.0f},
+        (Vec3){0.0f, 0.0f,  0.0f},
+        (Vec3){0.0f, 1.0f,  0.0f},
+        45.0f,
+        (float)WIDTH / HEIGHT,
+        0.1f,
+        100.0f
+    );
 
+    Mesh* cube    = create_cube_mesh();
+    Mesh* pyramid = create_pyramid_mesh();
+    if (!cube || !pyramid) {
+        fprintf(stderr, "Failed to create meshes\n");
+        return -1;
+    }
 
-    // Step 5: Define Triangle Vertices
-    Vertex v0 = {{-0.5f, 0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {255, 0, 0, 255}};
-    Vertex v1 = {{0.5f, 0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0, 255, 0, 255}};
-    Vertex v2 = {{0.0f, -0.5f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0, 0, 255, 255}};
-
-    // Step 6: Main Loop
     while (!glfwWindowShouldClose(window)) {
-        // Clear PixelBuffer and DepthBuffer
-        clear_buffer(pixel_buffer, (Color){0, 0, 0, 255}); // Black
+        clear_buffer(pixel_buffer, (Color){0,0,0,255});
         clear_depth_buffer(depth_buffer, WIDTH, HEIGHT);
 
-        // Update Camera View Matrix (if needed, e.g., for movement)
         camera.view_matrix = camera_get_view_matrix(&camera);
 
-        // Compute the Model-View-Projection (MVP) matrix
-        Mat4 model_matrix = mat4_identity(); // No transformations for the triangle
-        Mat4 mvp = mat4_multiply(camera.projection_matrix, mat4_multiply(camera.view_matrix, model_matrix));
+        float angle = (float)glfwGetTime();
 
-        // Draw the triangle
-        draw_triangle(v0, v1, v2, mvp, pixel_buffer, depth_buffer, WIDTH, HEIGHT);
+        Mat4 cube_model_matrix    = mat4_multiply(mat4_translation(-0.5f,  0.0f, 0.0f), mat4_rotation_y(angle));
+        Mat4 pyramid_model_matrix = mat4_multiply(mat4_translation( 0.5f, -0.5f, 0.0f), mat4_rotation_y(angle));
 
-        // Upload PixelBuffer to OpenGL texture
+        // Fill pass: draw triangles
+        Mat4 cube_mvp    = mat4_multiply(camera.projection_matrix, mat4_multiply(camera.view_matrix, cube_model_matrix));
+        for (size_t i = 0; i < cube->indexCount; i += 3) {
+            draw_triangle(
+                cube->vertices[cube->indices[i + 0]],
+                cube->vertices[cube->indices[i + 1]],
+                cube->vertices[cube->indices[i + 2]],
+                cube_mvp,
+                pixel_buffer,
+                depth_buffer,
+                WIDTH,
+                HEIGHT
+            );
+        }
+
+        Mat4 pyramid_mvp = mat4_multiply(camera.projection_matrix, mat4_multiply(camera.view_matrix, pyramid_model_matrix));
+        for (size_t i = 0; i < pyramid->indexCount; i += 3) {
+            draw_triangle(
+                pyramid->vertices[pyramid->indices[i + 0]],
+                pyramid->vertices[pyramid->indices[i + 1]],
+                pyramid->vertices[pyramid->indices[i + 2]],
+                pyramid_mvp,
+                pixel_buffer,
+                depth_buffer,
+                WIDTH,
+                HEIGHT
+            );
+        }
+
+        // Wireframe pass: draw only boundary edges
+        draw_wireframe(cube,    cube_mvp,    pixel_buffer, depth_buffer, WIDTH, HEIGHT);
+        draw_wireframe(pyramid, pyramid_mvp, pixel_buffer, depth_buffer, WIDTH, HEIGHT);
+
+        // Upload and display
         upload_pixel_buffer_to_texture(pixel_buffer, texture_id);
 
-        // Render the texture to fill the window
         glClear(GL_COLOR_BUFFER_BIT);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture_id);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0f, -1.0f);
@@ -86,13 +120,14 @@ int main(void) {
 
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
+        glDisable(GL_BLEND);
 
-        // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // Step 7: Clean Up
+    destroy_mesh(cube);
+    destroy_mesh(pyramid);
     destroy_pixel_buffer(pixel_buffer);
     destroy_depth_buffer(depth_buffer);
     glDeleteTextures(1, &texture_id);

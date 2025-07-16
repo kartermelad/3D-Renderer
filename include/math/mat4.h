@@ -73,4 +73,12 @@ Vec4 mat4_mul_vec4(Mat4 mat, Vec4 vec);
  */
 Mat4 mat4_look_at(Vec3 eye, Vec3 target, Vec3 up);
 
+/**
+ * Create a rotation matrix around the Y axis
+ * 
+ * @param angle Angle in radians
+ * @return 4x4 rotation matrix
+ */
+Mat4 mat4_rotation_y(float angle);
+
 #endif

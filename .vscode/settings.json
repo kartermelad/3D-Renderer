@@ -6,6 +6,7 @@
         "renderer.h": "c",
         "depth_buffer.h": "c",
         "camera.h": "c",
-        "triangle.h": "c"
+        "triangle.h": "c",
+        "vertex.h": "c"
     }
 }

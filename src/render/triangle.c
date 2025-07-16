@@ -5,43 +5,36 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include "mesh/mesh.h"
+#include <stdint.h>
+#include <stdlib.h>
 
-// Convert normalized device coordinates (NDC) to screen space
 static Vec3 ndc_to_screen(Vec3 ndc, int width, int height) {
     Vec3 screen;
     screen.x = (ndc.x + 1) * (width / 2);
     screen.y = (1 - ndc.y) * (height / 2);
     screen.z = ndc.z;
-
     return screen;
 }
 
-// Compute the edge function for a triangle
 static float edge_function(Vec2 a, Vec2 b, Vec2 c) {
-    float result = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-    return result;
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-// Check if a point is inside a triangle using barycentric coordinates
 static bool is_inside_triangle(Vec3 barycentric_coords) {
     bool all_positive = (barycentric_coords.x >= 0) && (barycentric_coords.y >= 0) && (barycentric_coords.z >= 0);
     bool all_negative = (barycentric_coords.x <= 0) && (barycentric_coords.y <= 0) && (barycentric_coords.z <= 0);
     return all_positive || all_negative;
 }
 
-
-// Interpolate depth value using barycentric coordinates
 static float interpolate_depth(Vec3 barycentric, float z0, float z1, float z2) {
-    float result = (barycentric.x * z0) + (barycentric.y * z1) + (barycentric.z * z2);
-    return result;
+    return barycentric.x * z0 + barycentric.y * z1 + barycentric.z * z2;
 }
 
-// Uses fmin to find the smallest value among three floating point numbers
 static float min(float a, float b, float c) {
     return fmin(fmin(a, b), c);
 }
 
-// Uses fmax to find the largest value among three floating point numbers
 static float max(float a, float b, float c) {
     return fmax(fmax(a, b), c);
 }
@@ -81,7 +74,6 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
         Vec2 temp = p1;
         p1 = p2;
         p2 = temp;
-    
         total_area = edge_function(p0, p1, p2);
     }
     
@@ -90,6 +82,9 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
     }
 
     float inv_area = 1.0f / total_area;
+
+    const float EDGE_THRESHOLD = 0.02f;
+    const Color EDGE_COLOR  = {255, 255, 255, 255};
 
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
@@ -102,7 +97,7 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
 
             if (is_inside_triangle(barycentric_coords)) {
                 float alpha = w0 * inv_area;
-                float beta = w1 * inv_area;
+                float beta  = w1 * inv_area;
                 float gamma = w2 * inv_area;
 
                 float depth = interpolate_depth((Vec3){alpha, beta, gamma}, screen0.z, screen1.z, screen2.z);
@@ -111,16 +106,63 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
                 if (depth < depth_buffer[index]) {
                     depth_buffer[index] = depth;
 
-                    Color color = {
-                        .r = fminf(fmaxf(alpha * v0.color.r + beta * v1.color.r + gamma * v2.color.r, 0.0f), 255.0f),
-                        .g = fminf(fmaxf(alpha * v0.color.g + beta * v1.color.g + gamma * v2.color.g, 0.0f), 255.0f),
-                        .b = fminf(fmaxf(alpha * v0.color.b + beta * v1.color.b + gamma * v2.color.b, 0.0f), 255.0f),
-                        .a = fminf(fmaxf(alpha * v0.color.a + beta * v1.color.a + gamma * v2.color.a, 0.0f), 255.0f)
-                    };
-
-                    set_pixel(buffer, x, y, color);
+                    if (alpha < EDGE_THRESHOLD || beta < EDGE_THRESHOLD || gamma < EDGE_THRESHOLD) {
+                        set_pixel(buffer, x, y, EDGE_COLOR);
+                    } else {
+                        // Interpolate vertex colors
+                        Color fill_color = {
+                            (uint8_t)(alpha * v0.color.r + beta * v1.color.r + gamma * v2.color.r),
+                            (uint8_t)(alpha * v0.color.g + beta * v1.color.g + gamma * v2.color.g),
+                            (uint8_t)(alpha * v0.color.b + beta * v1.color.b + gamma * v2.color.b),
+                            255
+                        };
+                        set_pixel(buffer, x, y, fill_color);
+                    }
                 }
             }
         }
     }
+}
+
+// static uint64_t pack_edge(uint32_t a, uint32_t b) {
+//     return ((uint64_t)a << 32) | b;
+// }
+
+static void draw_line(PixelBuffer* buf, int x0, int y0, int x1, int y1, Color c) {
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    while (true) {
+        set_pixel(buf, x0, y0, c);
+        if (x0 == x1 && y0 == y1) break;
+        int e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+}
+
+void draw_wireframe(const Mesh* mesh, Mat4 mvp, PixelBuffer* buffer, float* depth_buffer, int width, int height) {
+    (void)depth_buffer;
+    Vec3* screen = malloc(sizeof *screen * mesh->vertexCount);
+    for (size_t i = 0; i < mesh->vertexCount; i++) {
+        Vec4 v = mat4_mul_vec4(mvp, vertex_to_vec4(mesh->vertices[i]));
+        Vec3 ndc = {v.x/v.w, v.y/v.w, (v.z/v.w * 0.5f) + 0.5f};
+        screen[i] = ndc_to_screen(ndc, width, height);
+    }
+
+    Edge* edges;
+    size_t edgeCount = mesh_get_boundary_edges(mesh, &edges);
+
+    const Color EDGE_COLOR = {255, 255, 255, 255};
+    for (size_t e = 0; e < edgeCount; e++) {
+        Vec3 A = screen[edges[e].a];
+        Vec3 B = screen[edges[e].b];
+        draw_line(buffer,
+                  (int)roundf(A.x), (int)roundf(A.y),
+                  (int)roundf(B.x), (int)roundf(B.y),
+                  EDGE_COLOR);
+    }
+
+    free(edges);
+    free(screen);
 }

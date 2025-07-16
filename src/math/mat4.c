@@ -93,3 +93,14 @@ Mat4 mat4_look_at(Vec3 eye, Vec3 target, Vec3 up) {
 
     return result;
 }
+
+Mat4 mat4_rotation_y(float angle) {
+    float c = cosf(angle);
+    float s = sinf(angle);
+    Mat4 m = mat4_identity();
+    m.m[0] = c;
+    m.m[2] = s;
+    m.m[8] = -s;
+    m.m[10] = c;
+    return m;
+}

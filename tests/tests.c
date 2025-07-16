@@ -305,7 +305,7 @@ void test_camera_yaw(void) {
 
     camera_yaw(&camera, M_PI / 2.0f);
 
-    Vec3 expected_forward = { 1.0f, 0.0f, 0.0f }; // Forward = +X after 90° yaw
+    Vec3 expected_forward = { 1.0f, 0.0f, 0.0f };
     Vec3 new_forward = vec3_sub(camera.target, camera.position);
     new_forward = vec3_normalize(new_forward);
 
@@ -365,6 +365,19 @@ void test_mat4_look_at(void) {
     TEST_ASSERT_EQUAL_FLOAT(1.0f, view_matrix.m[15]);
 }
 
+void test_mat4_rotation_y(void) {
+    float angle = M_PI / 2.0f;
+    Mat4 rot = mat4_rotation_y(angle);
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 0.0f, rot.m[0]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, rot.m[5]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 0.0f, rot.m[10]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, rot.m[15]);
+
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, 1.0f, rot.m[2]);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001f, -1.0f, rot.m[8]);
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_create_pixel_buffer);
@@ -384,6 +397,8 @@ int main(void) {
     RUN_TEST(test_mat4_multiply);
     RUN_TEST(test_mat4_scale);
     RUN_TEST(test_mat4_perspective);
+    RUN_TEST(test_mat4_look_at);
+    RUN_TEST(test_mat4_rotation_y);
     RUN_TEST(test_create_depth_buffer);
     RUN_TEST(test_clear_depth_buffer);
     RUN_TEST(test_destroy_depth_buffer);
@@ -393,6 +408,5 @@ int main(void) {
     RUN_TEST(test_camera_strafe_right);
     RUN_TEST(test_camera_yaw);
     RUN_TEST(test_camera_pitch);
-    RUN_TEST(test_mat4_look_at);
     return UNITY_END();
 }
