@@ -1,6 +1,9 @@
 #include "core/camera.h"
-#define _USE_MATH_DEFINES
 #include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #define CAMERA_PITCH_LIMIT (M_PI / 2 - 0.01f)
 
@@ -36,21 +39,21 @@ Mat4 camera_get_view_matrix(const Camera* camera) {
     matrix.m[0] = right.x;
     matrix.m[1] = right.y;
     matrix.m[2] = right.z;
-    matrix.m[3] = -vec3_dot(right, camera->position);
+    matrix.m[3] = 0.0f;
 
     matrix.m[4] = up.x;
     matrix.m[5] = up.y;
     matrix.m[6] = up.z;
-    matrix.m[7] = -vec3_dot(up, camera->position);
+    matrix.m[7] = 0.0f;
 
     matrix.m[8] = forward.x;
     matrix.m[9] = forward.y;
     matrix.m[10] = forward.z;
-    matrix.m[11] = -vec3_dot(forward, camera->position);
+    matrix.m[11] = 0.0f;
 
-    matrix.m[12] = 0.0f;
-    matrix.m[13] = 0.0f;
-    matrix.m[14] = 0.0f;
+    matrix.m[12] = -vec3_dot(right, camera->position);
+    matrix.m[13] = -vec3_dot(up, camera->position);
+    matrix.m[14] = -vec3_dot(forward, camera->position);
     matrix.m[15] = 1.0f;
 
     return matrix;

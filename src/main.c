@@ -42,7 +42,7 @@ int main(void) {
 
     Camera camera;
     camera_init(&camera,
-        (Vec3){0.0f, 0.0f, -10.0f},
+        (Vec3){0.0f, 0.0f, -5.0f},
         (Vec3){0.0f, 0.0f,  0.0f},
         (Vec3){0.0f, 1.0f,  0.0f},
         45.0f,
@@ -66,8 +66,8 @@ int main(void) {
 
         float angle = (float)glfwGetTime();
 
-        Mat4 cube_model_matrix    = mat4_multiply(mat4_translation(-0.5f,  0.0f, 0.0f), mat4_rotation_y(angle));
-        Mat4 pyramid_model_matrix = mat4_multiply(mat4_translation( 0.5f, -0.5f, 0.0f), mat4_rotation_y(angle));
+        Mat4 cube_model_matrix    = mat4_multiply(mat4_translation(-1.5f,  0.0f, 0.0f), mat4_rotation_y(angle));
+        Mat4 pyramid_model_matrix = mat4_multiply(mat4_translation( 1.5f, -0.5f, 0.0f), mat4_rotation_y(angle));
 
         // Fill pass: draw triangles
         Mat4 cube_mvp    = mat4_multiply(camera.projection_matrix, mat4_multiply(camera.view_matrix, cube_model_matrix));

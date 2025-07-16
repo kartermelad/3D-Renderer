@@ -1,6 +1,9 @@
-#define _USE_MATH_DEFINES
 #include "math/mat4.h"
 #include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 Mat4 mat4_identity() {
     Mat4 matrix = {{0.0f}};
@@ -13,18 +16,18 @@ Mat4 mat4_identity() {
 }
 
 Mat4 mat4_multiply(Mat4 a, Mat4 b) {
-    Mat4 matrix = {{0.0f}};
-    
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            matrix.m[i*4+j] = 0.0f;
-            for (int k = 0; k < 4; k++) {
-                matrix.m[i*4+j] += a.m[i*4+k] * b.m[k*4+j];
+    Mat4 result = {{0.0f}};
+
+    for (int col = 0; col < 4; ++col) {
+        for (int row = 0; row < 4; ++row) {
+            float sum = 0.0f;
+            for (int k = 0; k < 4; ++k) {
+                sum += a.m[k * 4 + row] * b.m[col * 4 + k];
             }
+            result.m[col * 4 + row] = sum;
         }
     }
-
-    return matrix;
+    return result;
 }
 
 Mat4 mat4_translation(float x, float y, float z) {

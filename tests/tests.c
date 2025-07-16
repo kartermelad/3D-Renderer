@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <string.h>
 #include "harness/unity.h"
@@ -7,6 +6,10 @@
 #include "../include/math/vec3.h"
 #include "../include/math/mat4.h"
 #include "../include/render/depth_buffer.h"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 PixelBuffer* buffer;
 Camera camera;
@@ -252,7 +255,7 @@ void test_destroy_depth_buffer(void) {
     TEST_ASSERT_NOT_NULL(depth_buffer);
 
     destroy_depth_buffer(depth_buffer);
-    destroy_depth_buffer(NULL);\
+    destroy_depth_buffer(NULL);
 }
 
 void test_camera_move_forward(void) {

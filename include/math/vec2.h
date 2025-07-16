@@ -20,7 +20,7 @@ float vec2_cross(Vec2 a, Vec2 b);
  * 
  * @param a First 2D vector
  * @param b Second 2D vector
- * @return Scalar subtraction of the two vectors
+ * @return Vector subtraction of the two vectors
  */
 Vec2 vec2_subtract(Vec2 a, Vec2 b);
 

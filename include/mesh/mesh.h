@@ -2,6 +2,8 @@
 #define MESH_H
 
 #include "render/vertex.h"
+#include <stddef.h>
+#include <stdint.h>
 
 // Definition of the Mesh struct
 typedef struct {

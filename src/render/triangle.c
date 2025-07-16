@@ -95,7 +95,7 @@ void draw_triangle(Vertex v0, Vertex v1, Vertex v2, Mat4 mvp, PixelBuffer* buffe
     Vec3 normal = vec3_normalize(vec3_cross(edge1, edge2));
 
     Vec3 view_dir = {0.0f, 0.0f, -1.0f};
-    if (vec3_dot(normal, view_dir) >= 0.0f) {
+    if (vec3_dot(normal, view_dir) > 0.0f) {
         return;
     }
 
